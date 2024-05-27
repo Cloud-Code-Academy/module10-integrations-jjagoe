@@ -170,6 +170,8 @@ public with sharing class DummyJSONCallout {
 						      FROM Contact
 						      WHERE Id = :contactId];
 		// Create a map of the field values.
+		// Make sure to check that required contacts fields have a value. Default the value to unknown if it does not exists.
+		// Integration data can change over time. It is a best practice to add safeguards/validation to ensure the integration does not break.
 		Map<String, String> contactRecMap = new Map<String, String>();
 		contactRecMap.put('salesforceId', contactRec.Id ?? 'unknown');
 		contactRecMap.put('firstName', contactRec.FirstName ?? 'unknown');
@@ -179,8 +181,7 @@ public with sharing class DummyJSONCallout {
 
 		// Serialize the map into a JSON string.
 		String contactJson = JSON.serialize(contactRecMap);
-		// Make sure to check that required contacts fields have a value. Default the value to unknown if it does not exists.
-		// Integration data can change over time. It is a best practice to add safeguards/validation to ensure the integration does not break.
+		
 
 		return contactJson;
 	}
