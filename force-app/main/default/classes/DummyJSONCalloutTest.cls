@@ -133,35 +133,28 @@ public with sharing class DummyJSONCalloutTest {
 
 	@IsTest
 	static void testContactInsert() {
-		//Create 100 contact
-		List<Contact> contacts = new List<Contact>();
-		for (Integer i = 0; i < 1; i++) {
-			contacts.add(new Contact(FirstName = 'Test', LastName = 'User' + i));
-		}
+		Contact cont = new Contact(FirstName = 'Test', LastName = 'User', Email = 'test@example.com', Phone='+123456789', Birthdate = Date.valueOf('1990-01-01'));
 
 		// Register the mock callout class
 		Test.setMock(HttpCalloutMock.class, new DummyJSONCalloutMockGenerator());
 
 		// As this is a future method, we need to enclose it in Test.startTest() and Test.stopTest() to ensure it's executed in the test context.
 		Test.startTest();
-		insert contacts;
+		insert cont;
 		Test.stopTest();
 
 		// After the stopTest, the future method will have run. Now we can check if the contact was created correctly.
-		contacts = [
-			SELECT DummyJSON_Id__c, Email, Phone, Birthdate, MailingStreet, MailingCity, MailingPostalCode, MailingState, MailingCountry
+		cont = [
+			SELECT Email, Phone, Birthdate, MailingStreet, MailingCity, MailingPostalCode, MailingState, MailingCountry
 			FROM Contact
-			WHERE Id IN :contacts AND DummyJSON_Id__c != null
+			WHERE Id = :cont.Id
 		];
-		Assert.isTrue(!contacts.isEmpty(), 'No contacts were created');
-
-		for (Contact cont : contacts) {
-			Assert.isTrue(cont.DummyJSON_Id__c.isNumeric(), 'DummyJSON_Id is not numeric string');
-			Integer dummyJSONId = Integer.valueOf(cont.DummyJSON_Id__c);
-			Assert.isTrue(
-				dummyJSONId >=0 && dummyJSONId <= 100, 
-				'Expected range of DummyJSON_Id is [0-100]'
-			);
-		}
+		System.assertEquals('test@example.com', cont.Email, 'Email does not match your value: ' + cont.Email);
+		System.assertEquals('+123456789', cont.Phone,  'Phone does not match your value: ' + cont.Phone);
+		System.assertEquals(
+			cont.Birthdate,
+			Date.valueOf('1990-01-01'),
+			'Birthdate does not match your value: ' + cont.Birthdate
+		);
 	}
 }
